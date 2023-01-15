@@ -16,7 +16,7 @@ function toWapice {
   data="[{\"name\": \"$1-2\",\"path\": \"Consumption\",\"v\": $2,\"unit\": \"$4\",\"dataType\":\"double\", \"ts\": $3000}]"
   #data="{\"name\": \"$1\",\"path\": \"Consumption\",\"v\": $2,\"unit\": \"$4\"}"
   echo  $data
-  curl -X POST --user $username:$password -H "Content-Type:application/json" -d "$data" "https://my.iot-ticket.com/api/v1/process/write/$deviceid/"
+  curl -X POST --user $username:$password -H "Content-Type:application/json" -d "$data" "https://my.iot-ticket.com/api/v1/process/write/$deviceid/" &
 }
 
 function conv2JSON {
@@ -50,6 +50,15 @@ do
     #*)
     #  conv2JSON $line current
     #;;
+    "1-0:21.7.0"*)
+    conv2JSON $line current
+    ;;
+    "1-0:41.7.0"*)
+    conv2JSON $line current
+    ;;
+    "1-0:61.7.0"*)
+    conv2JSON $line current
+    ;;
     "1-0:1.7.0"*)
       #(
       conv2JSON $line current
