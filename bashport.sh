@@ -1,5 +1,5 @@
 #!/bin/bash
-. ./credentials
+. /etc/credentials
 
 timestamp=$(mktemp)
 #echo $username
@@ -14,9 +14,27 @@ function toWapice {
   #echo 5 $5
   #data="[{\"name\": \"$1\",\"path\": \"Mariankatu5/electricity\",\"v\": val,\"ts\": $3,\"unit\": \"sdf\"}]"
   data="[{\"name\": \"$1-2\",\"path\": \"Consumption\",\"v\": $2,\"unit\": \"$4\",\"dataType\":\"double\", \"ts\": $3000}]"
+  data2="{\"measurement\": \"$1-2\",\"fields\":{\"path\": \"Consumption\",\"v\": $2,\"unit\": \"$4\",\"dataType\":\"double\"}, \"time\": $3000}"
   #data="{\"name\": \"$1\",\"path\": \"Consumption\",\"v\": $2,\"unit\": \"$4\"}"
   echo  $data
-  curl -X POST --user $username:$password -H "Content-Type:application/json" -d "$data" "https://my.iot-ticket.com/api/v1/process/write/$deviceid/" &
+  mosquitto_pub -t aidon -m "$data2" &
+  curl -f -s -X POST --user $username:$password -H "Content-Type:application/json" -d "$data" "https://my.iot-ticket.com/api/v1/process/write/$deviceid/" > /dev/null &
+}
+
+function toInfluxViaMQTT {
+  #echo $username
+  #echo 1 $1
+  #echo 2 $2
+  #echo 3 $3
+  #echo 4 $4
+  #echo 5 $5
+  #data="[{\"name\": \"$1\",\"path\": \"Mariankatu5/electricity\",\"v\": val,\"ts\": $3,\"unit\": \"sdf\"}]"
+  #data="[{\"name\": \"$1-2\",\"path\": \"Consumption\",\"v\": $2,\"unit\": \"$4\",\"dataType\":\"double\", \"ts\": $3000}]"
+  data2="{\"measurement\": \"$1-2\",\"fields\":{\"path\": \"Consumption\",\"v\": $2,\"unit\": \"$4\",\"dataType\":\"double\"}, \"time\": $3000}"
+  #data="{\"name\": \"$1\",\"path\": \"Consumption\",\"v\": $2,\"unit\": \"$4\"}"
+  #echo  $data
+  mosquitto_pub -t aidon -m "$data2" &
+  #curl -f -s -X POST --user $username:$password -H "Content-Type:application/json" -d "$data" "https://my.iot-ticket.com/api/v1/process/write/$deviceid/" > /dev/null &
 }
 
 function conv2JSON {
@@ -51,23 +69,23 @@ do
     #  conv2JSON $line current
     #;;
     "1-0:21.7.0"*)
-    conv2JSON $line current
+    conv2JSON $line 1
     ;;
     "1-0:41.7.0"*)
-    conv2JSON $line current
+    conv2JSON $line 1
     ;;
     "1-0:61.7.0"*)
-    conv2JSON $line current
+    conv2JSON $line 1
     ;;
     "1-0:1.7.0"*)
       #(
-      conv2JSON $line current
+      conv2JSON $line 1
       #)&
       #toWapice $value
       #mosquitto_pub -r -t aidan/wats -m "${value}" &
     ;;
     "1-0:1.8.0"*)
-      conv2JSON $line total
+      conv2JSON $line 1
       #mosquitto_pub -r -t aidan/total -m "${value}" &
     ;;
     esac
